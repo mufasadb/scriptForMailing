@@ -1,0 +1,2 @@
+﻿OU Name,Logon Name,Display Name,Last Logon Time,User Logon Count,Account Status,Distinguished Name,Account Expiry Time,Domain Name,hasMFA
+Users and Groups - Staff/Users/Australia/QLD/Mt Gravatt/Griffith University,test.Userson@navitas.com,Test Userson,28/8/20 8:59,544,Enabled,"CN=blah ,OU=Griffith University,OU=Mt Gravatt,OU=QLD,OU=Australia,OU=Users,OU=Users and Groups - Staff,DC=navitas,DC=local",Never Expires,navitas.local,FALSE
