@@ -7,7 +7,7 @@ var logStream = fs.createWriteStream("logs.log", {flags:'a'});
 
 const fromEmail = ""; //enter your microsoft email address
 const yourPassword = ""; //enter your microsoft password
-const csvName = "";   //enter in the name of your readable csv file here. format requirements in Readme
+const csvName = "mfa.csv";   //enter in the name of your readable csv file here. format requirements in Readme
 const completeEmails = [];
 
 
@@ -36,13 +36,12 @@ var mailOptions = {
 
 
 
-async function sendMail(input) {
-
+async function createMails(input) {
+    console.log(input.length)
     console.log('Building Emails')
-    for (item of input) {
-        console.log(`Sending Email to ${item["Display Name"]}`)
+    for (item in input) {
 
-        let text = `Dear ${item["Display Name"]},
+        let text = `Dear ${input[item]["Display Name"]},
 
         As you would have seen in Scott’s recent all employee webinar, ‘Creating a safe environment for all’ is a strategic priority for Navitas. Information Security is an important element of this. I would like to remind you of the upcoming change which the Information Security Team will be implementing.
         
@@ -54,7 +53,7 @@ async function sendMail(input) {
         If you do not have an active Navitas email account - or have forgotten your login details – please contact service.desk@navitas.com before enrolling in MFA.
         
         If you have any questions relating to this announcement, or experience difficulties with the MFA enrollment process, please contact the  Navitas Information Security Team.`
-        let htmlV = `Dear ${item["Display Name"]},<br><br>
+        let htmlV = `Dear ${input[item]["Display Name"]},<br><br>
 
         As you would have seen in Scott’s recent all employee webinar, ‘Creating a safe environment for all’ is a strategic priority for Navitas. Information Security is an important element of this. I would like to remind you of the upcoming change which the Information Security Team will be implementing.<br><br>
         
@@ -68,25 +67,30 @@ async function sendMail(input) {
         If you have any questions relating to this announcement, or experience difficulties with the MFA enrollment process, please contact the  <a href="mailto: it.security@navitas.com"> Navitas Information Security Team</a>.`
         const mailOptions = {
             from: fromEmail,
-            to: item['Logon Name'],
+            to: input[item]['Logon Name'],
             subject: "Action Required - Multi-Factor Authentication Enrolment",
             text: text,
             html: htmlV
         };
-        transporter.sendMail(mailOptions, function (error, info) {
-            if (error) {
-                console.log('Sending an email failed')
-                console.log(error)
-                logStream.write(error + '\n')
-            } else {
-                console.log('email successfully sent, check logs for details')
-                logStream.write(info.response + '\n')
-                logStream.write(`Sent an email to ${item['Logon Name']} \n`)
-            }
-        });
-    }
-}
+        await setTimeout(()=> {sendMail(mailOptions)},item * 2000)
 
+    }
+};
+
+async function sendMail(mailObject){
+    console.log(`Sending Email to ${mailObject.to}`)
+    await transporter.sendMail(mailObject, function (error, info) {
+        if (error) {
+            console.log('Sending an email failed')
+            console.log(error)
+            logStream.write(error + '\n')
+        } else {
+            console.log('email successfully sent, check logs for details')
+            logStream.write(info.response + '\n')
+            logStream.write(`Sent an email to ${mailObject.to} \n`)
+        }
+    });
+}
 
 
 function readCSV() {
@@ -94,13 +98,13 @@ function readCSV() {
         .pipe(csv())
         .on('data', (row) => {
             console.log(row)
-            if (row.hasMFA == 'FALSE') {
+            if (row.MFA == 'FALSE') {
                 userList.push(row);
             }
         })
         .on('end', () => {
             console.log(userList)
-            sendMail(userList)
+            createMails(userList)
         });
 }
 
